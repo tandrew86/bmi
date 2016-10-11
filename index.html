@@ -8,69 +8,65 @@
         <link href="main.css" rel="stylesheet" type="text/css"/>
         <script src="jquery-3.1.1.js" type="text/javascript"></script>
         <script type="text/javascript">
-            $(document).ready(function () {
-                var userWeight,userHeight,bmi,youAreThin,youAreNormal,
-                    youHaveOverweight,youAreObese;
-                $('#inputContainer').on('keyup', '#weight', function () {
-                    userWeight = +$(this).val();
-                });
-                $('#inputContainer').on('keyup', '#height', function () {
-                    userHeight = +($(this).val()) / 100;
-                });
-                $('#inputContainer').on('click', "#submit", function (event) {
-                    if (userWeight === undefined || userHeight === undefined) {
-                        event.preventDefault();
-                        $('.errorMessage').addClass('errorMessageShow');
-                        $('.errorMessage').find('p').text("Kérlek, töltsd ki mindkét mezőt!").slideDown(1000).delay(6000).hide(1000);
-                    } else if (userWeight < 5.5 || userWeight > 610) {
-                        event.preventDefault();
-                        $('.errorMessage').addClass('errorMessageShow');
-                        $('.errorMessage').find('p').text("A megadott testsúlyod: " + userWeight + " kg.\n" +
-                                "A ma élő legkönnyebb felnőtt ember 5,5 kg, a legnehezebb pedig 610 kg.\n"
-                                + "Kérlek, adj meg egy valós értéket!").delay(6000).hide(1000);
-                    } else if (userHeight < 0.584 || userHeight > 2.51) {
-                        event.preventDefault();
-                        $('.errorMessage').addClass('errorMessageShow');
-                        $('.errorMessage').find('p').text("A megadott magasságod: " + userHeight * 100 + " cm.\n" +
-                                "A ma élő legalacsonyabb felnőtt ember 58,4 cm, a legmagasabb pedig 251 cm.\n"
-                                + "Kérlek, adj meg egy valós értéket!").delay(6000).hide(1000);
-                    } else {
-                        bmi = (userWeight / (userHeight * userHeight)).toFixed(2);
-                        event.preventDefault();
-                        (bmi < 18.5) ? youAreThin() : (bmi < 25) ? youAreNormal() : (bmi < 30) ? youHaveOverweight() : youAreObese();
-                    }
-                });
-                $('.result').on('click', '#reloadBtn', function () {
-                    window.location.reload();
-                });
+          $(document).ready(function () {
+            var input,result,messages,userWeight,userHeight,Error,bmi,resultCount,BmiResult;
 
-                youAreThin = function () {
+            input = $('#inputContainer');
+            result = $('.result');
+            messages = {
+                noData: "<p>Kérlek, töltsd ki mindkét mezőt!</p>",
+                wrongWeight: "<p>A ma élő legkönnyebb felnőtt ember 5,5 kg, a legnehezebb pedig 610 kg.<br>"
+                             + "Kérlek, adj meg egy valós értéket!</p>",
+                wrongHeight:"<p>A ma élő legalacsonyabb felnőtt ember 58,4 cm, a legmagasabb pedig 251 cm.<br>"
+                            + "Kérlek, adj meg egy valós értéket!</p>",
+                resultThin:"<p>Az érték alapján sovány vagy!</p>",
+                resultNormal:"<p>Gratulálok, az érték az optimális tartományba esik!</p>",
+                resultOverweight:"<p>Az érték alapján túlsúlyos vagy.</p>",
+                resultObese:"<p>Az érték alapján elhíztál.<br>"
+                            + "Tedd meg a szükséges lépéseket mihamarabb a testsúlyod csökkentése érdekében!</p>"
+            };
+         
+            Error = function(message) {
+                    var errorMessage = $('.errorMessage');
+                    errorMessage.empty();
+                    errorMessage.addClass('errorMessageShow');
+                    errorMessage.append(message).slideDown(2000).delay(4000).slideUp(2000);
+            };
+            
+            BmiResult = function(image,category,message) {
                     $('.bmiTableElements').removeClass('thin normal overweight obese');
-                    $('#bmiPics').find('#img1').addClass('thin');
-                    $('.result').addClass('resultShow');
-                    $('.result').find('p').text("A testtömegindexed ~" + bmi + ", ezen érték alapján sovány vagy!");
-                };
-                youAreNormal = function () {
-                    $('.bmiTableElements').removeClass('thin normal overweight obese');
-                    $('#bmiPics').find('#img2').addClass('normal');
-                    $('.result').addClass('resultShow');
-                    $('.result').find('p').text("A testtömegindexed ~" + bmi + ". Gratulálok, az érték az optimális tartományba esik!");
-                };
-
-                youHaveOverweight = function () {
-                    $('.bmiTableElements').removeClass('thin normal overweight obese');
-                    $('#bmiPics').find('#img3').addClass('overweight');
-                    $('.result').addClass('resultShow');
-                    $('.result').find('p').text("A testtömegindexed ~" + bmi + ". Az érték alapján túlsúlyos vagy.");
-                };
-
-                youAreObese = function () {
-                    $('.bmiTableElements').removeClass('thin normal overweight obese');
-                    $('#bmiPics').find('#img4').addClass('obese');
-                    $('.result').addClass('resultShow');
-                    $('.result').find('p').text("A testtömegindexed ~" + bmi + ", az érték alapján elhíztál. Tedd meg a szükséges lépéseket mihamarabb a testsúlyod csökkentése érdekében!");
-                };
+                    $('#bmiPics').find(image).addClass(category);
+                    result.empty();
+                    result.addClass('resultShow');
+                    result.append("<p>A testtömegindexed ~" + bmi + ".<br></p>").append(message).append('<input type="submit" id="reloadBtn" value="Újra!">');
+            };
+                
+            resultCount = function() {
+                    bmi = (userWeight / (userHeight * userHeight)).toFixed(2);
+                    (bmi < 18.5) ? new BmiResult('#img1','thin',messages.resultThin) : (bmi < 25) ? new BmiResult('#img2','normal',messages.resultNormal)
+                    : (bmi < 30) ? new BmiResult('#img3','overweight',messages.resultOverweight) : new BmiResult('#img4','obese',messages.resultObese);
+            };
+         
+            
+            input.on('keyup', '#weight', function () {
+                userWeight = +$(this).val();
             });
+            
+            input.on('keyup', '#height', function () {
+                userHeight = +($(this).val()) / 100;
+            });
+         
+            input.on('click', "#submit", function (event) {
+                event.preventDefault();
+                (userWeight === undefined || userHeight === undefined) ? new Error(messages.noData) :
+                (userWeight < 5.5 || userWeight > 610) ? new Error(messages.wrongWeight) :
+                (userHeight < 0.584 || userHeight > 2.51) ? new Error(messages.wrongHeight) : resultCount();
+            });
+      
+            result.on('click', '#reloadBtn', function () {
+                 window.location.reload();
+            });
+          });
         </script>
     </head>
     <body>
@@ -85,29 +81,26 @@
             </form>
         </div>
         <div class="errorMessage">
-            <p></p>
         </div>
         <div id="bmiPics">
             <table id="bmiPicsTable">
                 <tr>
                     <td class="bmiTableElements" id="img1">
-                        <img src="public_html/pics/thin.jpg" alt="thin"/>
+                        <img src="pics/thin.jpg" alt="thin"/>
                     </td>
                     <td class="bmiTableElements" id="img2">
-                        <img src="public_html/pics/normal.jpg" alt="normal"/>
+                        <img src="pics/normal.jpg" alt="normal"/>
                     </td>
                     <td class="bmiTableElements" id="img3">
-                        <img src="public_html/pics/overweight.jpg" alt="overweight"/>
+                        <img src="pics/overweight.jpg" alt="overweight"/>
                     </td>
                     <td class="bmiTableElements" id="img4">
-                        <img src="public_html/pics/obese.jpg" alt="obese"/>
+                        <img src="pics/obese.jpg" alt="obese"/>
                     </td>
                 </tr>
             </table>
         </div>
         <div class="result">
-            <p></p>
-            <input type="submit" id="reloadBtn" value="Újra!">
         </div>
     </body>
 </html>
