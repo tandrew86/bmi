@@ -131,8 +131,9 @@ div {
 
 .result p {
     margin-top: 0;
-    padding-top: 1em;
-    padding-bottom: 0.5em;
+    margin-bottom: 0;
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
     text-align: center;
 }
 
@@ -151,8 +152,7 @@ div {
 #reloadBtn {
     font-family: 'Playfair Display', serif;
     font-weight: bold;
-    margin-bottom: 0.8em;
+    margin-bottom: 0.6em;
 }
-
 
 
